@@ -35,12 +35,14 @@ model Task {
 model TaskChangelog {
   id          String   @id @default(uuid())
   taskId      String   @map("task_id")
+  userId      String   @map("user_id")
   title       String
   description String
   status      Status
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   task        Task     @relation(fields: [taskId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 
   @@map("task_changelog")
 }
@@ -59,13 +61,14 @@ model TaskComment {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
-  name         String
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
-  tasks        Task[]
-  taskComments TaskComment[]
+  id         String          @id @default(uuid())
+  email      String          @unique
+  name       String
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+  tasks      Task[]
+  comments   TaskComment[]
+  changelogs TaskChangelog[]
 
   @@map("user")
 }

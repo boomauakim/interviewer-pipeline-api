@@ -40,3 +40,12 @@ export type ListAllCommentItem = {
   created_at: Date;
   created_by: UserItem;
 };
+
+export type ListAllChangelogsItem = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  created_at: Date;
+  created_by: UserItem;
+};

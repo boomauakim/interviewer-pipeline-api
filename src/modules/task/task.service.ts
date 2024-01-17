@@ -174,4 +174,20 @@ export class TaskService {
       }
     }
   }
+
+  async findAllChangelogs(taskId: string) {
+    await this.findTask(taskId);
+
+    return this.prisma.taskChangelog.findMany({
+      where: {
+        taskId: taskId,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      include: {
+        user: true,
+      },
+    });
+  }
 }

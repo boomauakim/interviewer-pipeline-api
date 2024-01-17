@@ -167,4 +167,30 @@ export class TaskController {
   ) {
     await this.taskService.deleteComment(taskId, commentId);
   }
+
+  @Version('1')
+  @HttpCode(200)
+  @Get('/:id/changelogs')
+  async findAllChangelogs(@Param('id') taskId: string) {
+    const results = await this.taskService.findAllChangelogs(taskId);
+
+    const changelogs = results.map((changelog) => {
+      const user: UserItem = {
+        id: changelog.user?.id ?? '',
+        name: changelog.user?.name ?? '',
+        email: changelog.user?.email ?? '',
+      };
+
+      return {
+        id: changelog.id ?? '',
+        title: changelog.title ?? '',
+        description: changelog.description ?? '',
+        status: TaskStatusTitle[changelog.status] ?? '',
+        created_at: changelog.createdAt ?? new Date(),
+        created_by: user,
+      };
+    });
+
+    return { changelogs: changelogs };
+  }
 }
