@@ -5,10 +5,11 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   Version,
 } from '@nestjs/common';
-import { CreateTaskDto } from './task.dto';
+import { CreateTaskDto, UpdateTaskDto } from './task.dto';
 import { TaskService } from './task.service';
 import { ListAllTaskItem, TaskStatusTitle } from './task.type';
 
@@ -43,6 +44,16 @@ export class TaskController {
   @Post()
   async create(@Body() createTaskDto: CreateTaskDto) {
     await this.taskService.create(createTaskDto);
+  }
+
+  @Version('1')
+  @HttpCode(204)
+  @Patch('/:id')
+  async update(
+    @Param('id') taskId: string,
+    @Body() updateTaskDto: UpdateTaskDto,
+  ) {
+    await this.taskService.update(taskId, updateTaskDto);
   }
 
   @Version('1')
