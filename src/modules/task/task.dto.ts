@@ -41,3 +41,13 @@ export class UpdateTaskDto {
   @IsBoolean()
   is_archived: boolean;
 }
+
+export class ListAllCommentFilterDto {
+  @IsOptional()
+  @IsString()
+  page: string;
+
+  @IsOptional()
+  @IsString()
+  limit: string;
+}

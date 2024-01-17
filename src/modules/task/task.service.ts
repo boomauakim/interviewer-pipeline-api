@@ -1,6 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTaskDto, ListAllTaskFilterDto, UpdateTaskDto } from './task.dto';
+import {
+  CreateTaskDto,
+  ListAllCommentFilterDto,
+  ListAllTaskFilterDto,
+  UpdateTaskDto,
+} from './task.dto';
 
 @Injectable()
 export class TaskService {
@@ -61,15 +66,7 @@ export class TaskService {
   }
 
   async updateTask(taskId: string, task: UpdateTaskDto) {
-    const expectedTask = await this.prisma.task.findUnique({
-      where: {
-        id: taskId,
-      },
-    });
-
-    if (!expectedTask) {
-      throw new NotFoundException(`Task not found`);
-    }
+    const expectedTask = await this.findTask(taskId);
 
     return this.prisma.task.update({
       where: {
@@ -96,4 +93,33 @@ export class TaskService {
       }
     }
   }
+
+  async findAllComments(taskId: string, query: ListAllCommentFilterDto) {
+    const page = Number(query?.page ?? 1);
+    const limit = Number(query?.limit ?? 10);
+
+    const skip = (page - 1) * limit;
+
+    await this.findTask(taskId);
+
+    return this.prisma.$transaction([
+      this.prisma.taskComment.findMany({
+        where: {
+          taskId: taskId,
+        },
+        include: {
+          user: true,
+        },
+        skip: skip,
+        take: limit,
+      }),
+      this.prisma.taskComment.count({
+        where: {
+          taskId: taskId,
+        },
+      }),
+    ]);
+  }
+
+
 }

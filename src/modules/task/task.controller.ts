@@ -10,7 +10,12 @@ import {
   Query,
   Version,
 } from '@nestjs/common';
-import { CreateTaskDto, ListAllTaskFilterDto, UpdateTaskDto } from './task.dto';
+import {
+  CreateTaskDto,
+  ListAllCommentFilterDto,
+  ListAllTaskFilterDto,
+  UpdateTaskDto,
+} from './task.dto';
 import { TaskService } from './task.service';
 import {
   ListAllTaskItem,
@@ -64,7 +69,7 @@ export class TaskController {
       email: result.user?.email ?? '',
     };
 
-    const taskResp: TaskItem = {
+    const task: TaskItem = {
       id: result.id ?? '',
       title: result.title ?? '',
       description: result.description ?? '',
@@ -73,7 +78,7 @@ export class TaskController {
       created_by: user,
     };
 
-    return { task: taskResp };
+    return { task: task };
   }
 
   @Version('1')
@@ -98,5 +103,36 @@ export class TaskController {
   @Delete('/:id')
   async deleteTask(@Param('id') taskId: string) {
     await this.taskService.deleteTask(taskId);
+  }
+
+  @Version('1')
+  @HttpCode(200)
+  @Get('/:id/comments')
+  async findAllComments(
+    @Param('id') taskId: string,
+    @Query() query: ListAllCommentFilterDto,
+  ) {
+    const [results, count] = await this.taskService.findAllComments(
+      taskId,
+      query,
+    );
+
+    const comments = results.map((comment) => {
+      const user: UserItem = {
+        id: comment.user?.id ?? '',
+        name: comment.user?.name ?? '',
+        email: comment.user?.email ?? '',
+      };
+
+      return {
+        id: comment.id ?? '',
+        comment: comment.comment ?? '',
+        created_at: comment.createdAt ?? new Date(),
+        created_by: user,
+      };
+    });
+
+    return { comments: comments, total: count };
+  }
   }
 }

@@ -21,8 +21,8 @@ export type ListAllTaskItem = {
   title: string;
   description: string;
   status: string;
-  created_by: UserItem;
   created_at: Date;
+  created_by: UserItem;
 };
 
 export type TaskItem = {
@@ -30,6 +30,13 @@ export type TaskItem = {
   title: string;
   description: string;
   status: string;
-  created_by: UserItem;
   created_at: Date;
+  created_by: UserItem;
+};
+
+export type ListAllCommentItem = {
+  id: string;
+  comment: string;
+  created_at: Date;
+  created_by: UserItem;
 };
