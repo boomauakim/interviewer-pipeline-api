@@ -11,6 +11,7 @@ import {
   Version,
 } from '@nestjs/common';
 import {
+  CreateCommentDto,
   CreateTaskDto,
   ListAllCommentFilterDto,
   ListAllTaskFilterDto,
@@ -134,5 +135,14 @@ export class TaskController {
 
     return { comments: comments, total: count };
   }
+
+  @Version('1')
+  @HttpCode(201)
+  @Post('/:id/comments')
+  async createComment(
+    @Param('id') taskId: string,
+    @Body() createCommentDto: CreateCommentDto,
+  ) {
+    await this.taskService.createComment(taskId, createCommentDto);
   }
 }

@@ -121,5 +121,14 @@ export class TaskService {
     ]);
   }
 
+  async createComment(taskId: string, comment: CreateCommentDto) {
+    await this.findTask(taskId);
 
+    return this.prisma.taskComment.create({
+      data: {
+        taskId: taskId,
+        comment: comment.comment,
+      },
+    });
+  }
 }

@@ -51,3 +51,9 @@ export class ListAllCommentFilterDto {
   @IsString()
   limit: string;
 }
+
+export class CreateCommentDto {
+  @IsNotEmpty()
+  @IsString()
+  comment: string;
+}
