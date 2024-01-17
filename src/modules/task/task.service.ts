@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateCommentDto,
   CreateTaskDto,
+  ListAllChangelogsFilterDto,
   ListAllCommentFilterDto,
   ListAllTaskFilterDto,
   UpdateCommentDto,
@@ -58,19 +63,30 @@ export class TaskService {
     return task;
   }
 
-  async createTask(task: CreateTaskDto) {
-    return this.prisma.task.create({
+  async createTask(userId: string, task: CreateTaskDto) {
+    const result = await this.prisma.task.create({
       data: {
+        userId: userId,
         title: task.title,
         description: task.description,
       },
     });
+
+    await this.prisma.taskChangelog.create({
+      data: {
+        taskId: result.id,
+        userId: userId,
+        title: result.title,
+        description: 'Task created',
+        status: result.status,
+      },
+    });
   }
 
-  async updateTask(taskId: string, task: UpdateTaskDto) {
+  async updateTask(userId: string, taskId: string, task: UpdateTaskDto) {
     const expectedTask = await this.findTask(taskId);
 
-    return this.prisma.task.update({
+    const result = await this.prisma.task.update({
       where: {
         id: taskId,
       },
@@ -78,6 +94,16 @@ export class TaskService {
         description: task.description ?? expectedTask.description,
         status: task.status ?? expectedTask.status,
         isArchived: task.is_archived ?? expectedTask.isArchived,
+      },
+    });
+
+    await this.prisma.taskChangelog.create({
+      data: {
+        taskId: result.id,
+        userId: userId,
+        title: result.title,
+        description: 'Task updated',
+        status: result.status,
       },
     });
   }
@@ -112,6 +138,9 @@ export class TaskService {
         include: {
           user: true,
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
         skip: skip,
         take: limit,
       }),
@@ -123,34 +152,82 @@ export class TaskService {
     ]);
   }
 
-  async createComment(taskId: string, comment: CreateCommentDto) {
-    await this.findTask(taskId);
-
-    return this.prisma.taskComment.create({
-      data: {
-        taskId: taskId,
-        comment: comment.comment,
+  async findComment(commentId: string) {
+    const comment = await this.prisma.taskComment.findUnique({
+      where: {
+        id: commentId,
       },
     });
+
+    if (!comment) {
+      throw new NotFoundException(`Comment not found`);
+    }
+
+    return comment;
+  }
+
+  async createComment(
+    userId: string,
+    taskId: string,
+    comment: CreateCommentDto,
+  ) {
+    const task = await this.findTask(taskId);
+
+    await this.prisma.$transaction([
+      this.prisma.taskComment.create({
+        data: {
+          taskId: taskId,
+          userId: userId,
+          comment: comment.comment,
+        },
+      }),
+      this.prisma.taskChangelog.create({
+        data: {
+          taskId: task.id,
+          userId: userId,
+          title: task.title,
+          description: 'Comment created',
+          status: task.status,
+        },
+      }),
+    ]);
   }
 
   async updateComment(
+    userId: string,
     taskId: string,
     commentId: string,
     comment: UpdateCommentDto,
   ) {
-    await this.findTask(taskId);
+    const task = await this.findTask(taskId);
+
+    const expectedComment = await this.findComment(commentId);
+
+    if (expectedComment.userId != userId) {
+      throw new ForbiddenException(`You can't update this comment`);
+    }
 
     try {
-      await this.prisma.taskComment.update({
-        where: {
-          taskId: taskId,
-          id: commentId,
-        },
-        data: {
-          comment: comment.comment,
-        },
-      });
+      await this.prisma.$transaction([
+        this.prisma.taskComment.update({
+          where: {
+            taskId: taskId,
+            id: commentId,
+          },
+          data: {
+            comment: comment.comment,
+          },
+        }),
+        this.prisma.taskChangelog.create({
+          data: {
+            taskId: task.id,
+            userId: userId,
+            title: task.title,
+            description: 'Comment updated',
+            status: task.status,
+          },
+        }),
+      ]);
     } catch (e) {
       if (e.code == 'P2025') {
         throw new NotFoundException(`Comment not found`);
@@ -158,16 +235,33 @@ export class TaskService {
     }
   }
 
-  async deleteComment(taskId: string, commentId: string) {
-    await this.findTask(taskId);
+  async deleteComment(userId: string, taskId: string, commentId: string) {
+    const task = await this.findTask(taskId);
+
+    const expectedComment = await this.findComment(commentId);
+
+    if (expectedComment.userId != userId) {
+      throw new ForbiddenException(`You can't update this comment`);
+    }
 
     try {
-      await this.prisma.taskComment.delete({
-        where: {
-          taskId: taskId,
-          id: commentId,
-        },
-      });
+      await this.prisma.$transaction([
+        this.prisma.taskComment.delete({
+          where: {
+            taskId: taskId,
+            id: commentId,
+          },
+        }),
+        this.prisma.taskChangelog.create({
+          data: {
+            taskId: task.id,
+            userId: userId,
+            title: task.title,
+            description: 'Comment deleted',
+            status: task.status,
+          },
+        }),
+      ]);
     } catch (e) {
       if (e.code == 'P2025') {
         throw new NotFoundException(`Comment not found`);
@@ -175,19 +269,33 @@ export class TaskService {
     }
   }
 
-  async findAllChangelogs(taskId: string) {
+  async findAllChangelogs(taskId: string, query: ListAllChangelogsFilterDto) {
+    const page = Number(query?.page ?? 1);
+    const limit = Number(query?.limit ?? 10);
+
+    const skip = (page - 1) * limit;
+
     await this.findTask(taskId);
 
-    return this.prisma.taskChangelog.findMany({
-      where: {
-        taskId: taskId,
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-      include: {
-        user: true,
-      },
-    });
+    return this.prisma.$transaction([
+      this.prisma.taskChangelog.findMany({
+        where: {
+          taskId: taskId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: skip,
+        take: limit,
+        include: {
+          user: true,
+        },
+      }),
+      this.prisma.taskChangelog.count({
+        where: {
+          taskId: taskId,
+        },
+      }),
+    ]);
   }
 }

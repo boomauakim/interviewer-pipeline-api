@@ -4,15 +4,19 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
   Query,
+  Request,
+  UseGuards,
   Version,
 } from '@nestjs/common';
 import {
   CreateCommentDto,
   CreateTaskDto,
+  ListAllChangelogsFilterDto,
   ListAllCommentFilterDto,
   ListAllTaskFilterDto,
   UpdateCommentDto,
@@ -25,13 +29,15 @@ import {
   TaskStatusTitle,
   UserItem,
 } from './task.type';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('tasks')
 export class TaskController {
   constructor(private taskService: TaskService) {}
 
   @Version('1')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
   @Get()
   async findAllTasks(@Query() query: ListAllTaskFilterDto) {
     const [results, count] = await this.taskService.findAllTasks(query);
@@ -60,8 +66,9 @@ export class TaskController {
   }
 
   @Version('1')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   @Get('/:id')
+  @UseGuards(AuthGuard)
   async findTask(@Param('id') taskId: string) {
     const result = await this.taskService.findTask(taskId);
 
@@ -84,31 +91,40 @@ export class TaskController {
   }
 
   @Version('1')
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(AuthGuard)
   @Post()
-  async createTask(@Body() createTaskDto: CreateTaskDto) {
-    await this.taskService.createTask(createTaskDto);
+  async createTask(@Request() req: any, @Body() createTaskDto: CreateTaskDto) {
+    const userId = req.user.sub;
+
+    await this.taskService.createTask(userId, createTaskDto);
   }
 
   @Version('1')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthGuard)
   @Patch('/:id')
   async updateTask(
+    @Request() req: any,
     @Param('id') taskId: string,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
-    await this.taskService.updateTask(taskId, updateTaskDto);
+    const userId = req.user.sub;
+
+    await this.taskService.updateTask(userId, taskId, updateTaskDto);
   }
 
   @Version('1')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthGuard)
   @Delete('/:id')
   async deleteTask(@Param('id') taskId: string) {
     await this.taskService.deleteTask(taskId);
   }
 
   @Version('1')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
   @Get('/:id/comments')
   async findAllComments(
     @Param('id') taskId: string,
@@ -138,41 +154,65 @@ export class TaskController {
   }
 
   @Version('1')
-  @HttpCode(201)
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(AuthGuard)
   @Post('/:id/comments')
   async createComment(
+    @Request() req: any,
     @Param('id') taskId: string,
     @Body() createCommentDto: CreateCommentDto,
   ) {
-    await this.taskService.createComment(taskId, createCommentDto);
+    const userId = req.user.sub;
+
+    await this.taskService.createComment(userId, taskId, createCommentDto);
   }
 
   @Version('1')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthGuard)
   @Patch('/:id/comments/:commentId')
   async updateComment(
+    @Request() req: any,
     @Param('id') taskId: string,
     @Param('commentId') commentId: string,
     @Body() updateCommentDto: UpdateCommentDto,
   ) {
-    await this.taskService.updateComment(taskId, commentId, updateCommentDto);
+    const userId = req.user.sub;
+
+    await this.taskService.updateComment(
+      userId,
+      taskId,
+      commentId,
+      updateCommentDto,
+    );
   }
 
   @Version('1')
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthGuard)
   @Delete('/:id/comments/:commentId')
   async deleteComment(
+    @Request() req: any,
     @Param('id') taskId: string,
     @Param('commentId') commentId: string,
   ) {
-    await this.taskService.deleteComment(taskId, commentId);
+    const userId = req.user.sub;
+
+    await this.taskService.deleteComment(userId, taskId, commentId);
   }
 
   @Version('1')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
   @Get('/:id/changelogs')
-  async findAllChangelogs(@Param('id') taskId: string) {
-    const results = await this.taskService.findAllChangelogs(taskId);
+  async findAllChangelogs(
+    @Param('id') taskId: string,
+    @Query() query: ListAllChangelogsFilterDto,
+  ) {
+    const [results, count] = await this.taskService.findAllChangelogs(
+      taskId,
+      query,
+    );
 
     const changelogs = results.map((changelog) => {
       const user: UserItem = {
@@ -191,6 +231,6 @@ export class TaskController {
       };
     });
 
-    return { changelogs: changelogs };
+    return { changelogs: changelogs, total: count };
   }
 }
