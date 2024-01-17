@@ -9,3 +9,57 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Status {
+  TO_DO
+  IN_PROGRESS
+  DONE
+}
+
+model Task {
+  id          String          @id @default(uuid())
+  title       String
+  description String
+  status      Status
+  isArchived  Boolean         @default(false) @map("is_archived")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  changelogs  TaskChangelog[]
+  comments    TaskComment[]
+
+  @@map("task")
+}
+
+model TaskChangelog {
+  id          String   @id @default(uuid())
+  taskId      String   @map("task_id")
+  title       String
+  description String
+  status      Status
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  task        Task     @relation(fields: [taskId], references: [id])
+
+  @@map("task_changelog")
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  taskId    String   @map("task_id")
+  comment   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  task      Task     @relation(fields: [taskId], references: [id])
+
+  @@map("task_comment")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user")
+}
