@@ -15,6 +15,7 @@ import {
   CreateTaskDto,
   ListAllCommentFilterDto,
   ListAllTaskFilterDto,
+  UpdateCommentDto,
   UpdateTaskDto,
 } from './task.dto';
 import { TaskService } from './task.service';
@@ -144,5 +145,16 @@ export class TaskController {
     @Body() createCommentDto: CreateCommentDto,
   ) {
     await this.taskService.createComment(taskId, createCommentDto);
+  }
+
+  @Version('1')
+  @HttpCode(204)
+  @Patch('/:id/comments/:commentId')
+  async updateComment(
+    @Param('id') taskId: string,
+    @Param('commentId') commentId: string,
+    @Body() updateCommentDto: UpdateCommentDto,
+  ) {
+    await this.taskService.updateComment(taskId, commentId, updateCommentDto);
   }
 }

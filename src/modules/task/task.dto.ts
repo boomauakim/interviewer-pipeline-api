@@ -57,3 +57,9 @@ export class CreateCommentDto {
   @IsString()
   comment: string;
 }
+
+export class UpdateCommentDto {
+  @IsNotEmpty()
+  @IsString()
+  comment: string;
+}

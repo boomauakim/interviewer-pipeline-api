@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  CreateCommentDto,
   CreateTaskDto,
   ListAllCommentFilterDto,
   ListAllTaskFilterDto,
+  UpdateCommentDto,
   UpdateTaskDto,
 } from './task.dto';
 
@@ -130,5 +132,28 @@ export class TaskService {
         comment: comment.comment,
       },
     });
+  }
+
+  async updateComment(
+    taskId: string,
+    commentId: string,
+    comment: UpdateCommentDto,
+  ) {
+    await this.findTask(taskId);
+
+    try {
+      await this.prisma.taskComment.update({
+        where: {
+          id: commentId,
+        },
+        data: {
+          comment: comment.comment,
+        },
+      });
+    } catch (e) {
+      if (e.code == 'P2025') {
+        throw new NotFoundException(`Comment not found`);
+      }
+    }
   }
 }
