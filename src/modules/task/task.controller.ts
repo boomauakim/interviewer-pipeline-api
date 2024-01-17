@@ -157,4 +157,14 @@ export class TaskController {
   ) {
     await this.taskService.updateComment(taskId, commentId, updateCommentDto);
   }
+
+  @Version('1')
+  @HttpCode(204)
+  @Delete('/:id/comments/:commentId')
+  async deleteComment(
+    @Param('id') taskId: string,
+    @Param('commentId') commentId: string,
+  ) {
+    await this.taskService.deleteComment(taskId, commentId);
+  }
 }

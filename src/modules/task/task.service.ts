@@ -144,10 +144,28 @@ export class TaskService {
     try {
       await this.prisma.taskComment.update({
         where: {
+          taskId: taskId,
           id: commentId,
         },
         data: {
           comment: comment.comment,
+        },
+      });
+    } catch (e) {
+      if (e.code == 'P2025') {
+        throw new NotFoundException(`Comment not found`);
+      }
+    }
+  }
+
+  async deleteComment(taskId: string, commentId: string) {
+    await this.findTask(taskId);
+
+    try {
+      await this.prisma.taskComment.delete({
+        where: {
+          taskId: taskId,
+          id: commentId,
         },
       });
     } catch (e) {
