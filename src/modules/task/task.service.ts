@@ -21,6 +21,10 @@ export class TaskService {
         title: task.title,
         description: task.title,
         status: TaskStatus.TO_DO,
+  async delete(taskId: string) {
+    return this.prisma.task.delete({
+      where: {
+        id: taskId,
       },
     });
   }
