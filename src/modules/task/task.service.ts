@@ -7,6 +7,14 @@ import { TaskStatus } from './task.type';
 export class TaskService {
   constructor(private prisma: PrismaService) {}
 
+  async findAll() {
+    return this.prisma.task.findMany({
+      include: {
+        user: true,
+      },
+    });
+  }
+
   async create(task: CreateTaskDto) {
     return this.prisma.task.create({
       data: {
