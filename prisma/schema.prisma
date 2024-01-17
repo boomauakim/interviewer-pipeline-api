@@ -18,14 +18,16 @@ enum Status {
 
 model Task {
   id          String          @id @default(uuid())
+  userId      String          @map("user_id")
   title       String
   description String
-  status      Status
+  status      Status          @default(TO_DO)
   isArchived  Boolean         @default(false) @map("is_archived")
   createdAt   DateTime        @default(now()) @map("created_at")
   updatedAt   DateTime        @updatedAt @map("updated_at")
   changelogs  TaskChangelog[]
   comments    TaskComment[]
+  user        User            @relation(fields: [userId], references: [id])
 
   @@map("task")
 }
@@ -33,12 +35,14 @@ model Task {
 model TaskChangelog {
   id          String   @id @default(uuid())
   taskId      String   @map("task_id")
+  userId      String   @map("user_id")
   title       String
   description String
   status      Status
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   task        Task     @relation(fields: [taskId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 
   @@map("task_changelog")
 }
@@ -46,20 +50,25 @@ model TaskChangelog {
 model TaskComment {
   id        String   @id @default(uuid())
   taskId    String   @map("task_id")
+  userId    String   @map("user_id")
   comment   String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   task      Task     @relation(fields: [taskId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@map("task_comment")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         String          @id @default(uuid())
+  email      String          @unique
+  name       String
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+  tasks      Task[]
+  comments   TaskComment[]
+  changelogs TaskChangelog[]
 
   @@map("user")
 }
