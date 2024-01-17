@@ -7,6 +7,16 @@ import {
 } from 'class-validator';
 import { TaskStatus } from './task.type';
 
+export class ListAllTaskFilterDto {
+  @IsOptional()
+  @IsString()
+  page: string;
+
+  @IsOptional()
+  @IsString()
+  limit: string;
+}
+
 export class CreateTaskDto {
   @IsNotEmpty()
   @IsString()

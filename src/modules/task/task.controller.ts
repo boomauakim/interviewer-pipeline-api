@@ -7,11 +7,17 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Version,
 } from '@nestjs/common';
-import { CreateTaskDto, UpdateTaskDto } from './task.dto';
+import { CreateTaskDto, ListAllTaskFilterDto, UpdateTaskDto } from './task.dto';
 import { TaskService } from './task.service';
-import { ListAllTaskItem, TaskStatusTitle } from './task.type';
+import {
+  ListAllTaskItem,
+  TaskItem,
+  TaskStatusTitle,
+  UserItem,
+} from './task.type';
 
 @Controller('tasks')
 export class TaskController {
@@ -20,46 +26,77 @@ export class TaskController {
   @Version('1')
   @HttpCode(200)
   @Get()
-  async findAll() {
-    const results = await this.taskService.findAll();
+  async findAllTasks(@Query() query: ListAllTaskFilterDto) {
+    const [results, count] = await this.taskService.findAllTasks(query);
 
-    const taksRep: ListAllTaskItem[] = results.map((task) => {
+    const tasks: ListAllTaskItem[] = results.map((task) => {
+      const user: UserItem = {
+        id: task.user?.id ?? '',
+        name: task.user?.name ?? '',
+        email: task.user?.email ?? '',
+      };
+
       return {
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        status: TaskStatusTitle[task.status],
-        created_by: task.user.name,
-        created_at: task.createdAt,
+        id: task.id ?? '',
+        title: task.title ?? '',
+        description: task.description ?? '',
+        status: TaskStatusTitle[task.status] ?? '',
+        created_at: task.createdAt ?? new Date(),
+        created_by: user,
       };
     });
 
     return {
-      tasks: taksRep,
+      tasks: tasks,
+      total: count,
     };
+  }
+
+  @Version('1')
+  @HttpCode(200)
+  @Get('/:id')
+  async findTask(@Param('id') taskId: string) {
+    const result = await this.taskService.findTask(taskId);
+
+    const user: UserItem = {
+      id: result.user?.id ?? '',
+      name: result.user?.name ?? '',
+      email: result.user?.email ?? '',
+    };
+
+    const taskResp: TaskItem = {
+      id: result.id ?? '',
+      title: result.title ?? '',
+      description: result.description ?? '',
+      status: TaskStatusTitle[result.status] ?? '',
+      created_at: result.createdAt ?? new Date(),
+      created_by: user,
+    };
+
+    return { task: taskResp };
   }
 
   @Version('1')
   @HttpCode(201)
   @Post()
-  async create(@Body() createTaskDto: CreateTaskDto) {
-    await this.taskService.create(createTaskDto);
+  async createTask(@Body() createTaskDto: CreateTaskDto) {
+    await this.taskService.createTask(createTaskDto);
   }
 
   @Version('1')
   @HttpCode(204)
   @Patch('/:id')
-  async update(
+  async updateTask(
     @Param('id') taskId: string,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
-    await this.taskService.update(taskId, updateTaskDto);
+    await this.taskService.updateTask(taskId, updateTaskDto);
   }
 
   @Version('1')
   @HttpCode(204)
   @Delete('/:id')
-  async delete(@Param('id') taskId: string) {
-    await this.taskService.delete(taskId);
+  async deleteTask(@Param('id') taskId: string) {
+    await this.taskService.deleteTask(taskId);
   }
 }

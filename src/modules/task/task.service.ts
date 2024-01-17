@@ -1,33 +1,66 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTaskDto, UpdateTaskDto } from './task.dto';
+import { CreateTaskDto, ListAllTaskFilterDto, UpdateTaskDto } from './task.dto';
 
 @Injectable()
 export class TaskService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
-    return this.prisma.task.findMany({
+  async findAllTasks(query: ListAllTaskFilterDto) {
+    const page = Number(query?.page ?? 1);
+    const limit = Number(query?.limit ?? 10);
+
+    const skip = (page - 1) * limit;
+
+    return this.prisma.$transaction([
+      this.prisma.task.findMany({
+        where: {
+          isArchived: false,
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+        include: {
+          user: true,
+        },
+        skip: skip,
+        take: limit,
+      }),
+      this.prisma.task.count({
+        where: {
+          isArchived: false,
+        },
+      }),
+    ]);
+  }
+
+  async findTask(taskId: string) {
+    const task = await this.prisma.task.findUnique({
       where: {
-        isArchived: false,
-      },
-      orderBy: {
-        createdAt: 'asc',
+        id: taskId,
       },
       include: {
         user: true,
       },
     });
+
+    if (!task) {
+      throw new NotFoundException(`Task not found`);
+    }
+
+    return task;
   }
 
-  async create(task: CreateTaskDto) {
+  async createTask(task: CreateTaskDto) {
     return this.prisma.task.create({
       data: {
         title: task.title,
-        description: task.title,
-        status: TaskStatus.TO_DO,
+        description: task.description,
+      },
+    });
+  }
 
-  async update(taskId: string, task: UpdateTaskDto) {
+  async updateTask(taskId: string, task: UpdateTaskDto) {
     const expectedTask = await this.prisma.task.findUnique({
       where: {
         id: taskId,
@@ -50,7 +83,7 @@ export class TaskService {
     });
   }
 
-  async delete(taskId: string) {
+  async deleteTask(taskId: string) {
     try {
       await this.prisma.task.delete({
         where: {
