@@ -63,3 +63,13 @@ export class UpdateCommentDto {
   @IsString()
   comment: string;
 }
+
+export class ListAllChangelogsFilterDto {
+  @IsOptional()
+  @IsString()
+  page: string;
+
+  @IsOptional()
+  @IsString()
+  limit: string;
+}
