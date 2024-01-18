@@ -17,7 +17,7 @@ import { APP_GUARD } from '@nestjs/core';
           limit: 10,
         },
       ],
-      storage: new ThrottlerStorageRedisService(),
+      storage: new ThrottlerStorageRedisService(process.env.REDIS_URL),
     }),
     UserModule,
   ],
