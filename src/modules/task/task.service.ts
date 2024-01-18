@@ -241,7 +241,7 @@ export class TaskService {
     const expectedComment = await this.findComment(commentId);
 
     if (expectedComment.userId != userId) {
-      throw new ForbiddenException(`You can't update this comment`);
+      throw new ForbiddenException(`You can't delete this comment`);
     }
 
     try {

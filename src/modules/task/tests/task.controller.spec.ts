@@ -37,7 +37,7 @@ describe('TaskController', () => {
             id: '172d7d82-af2c-4066-a07a-321f808955c0',
             title: 'Candidate 1',
             description: 'Lorem',
-            status: 'To Do',
+            status: 'TO_DO',
             created_at: new Date('2024-01-17T17:33:16.694Z'),
             created_by: {
               id: 'f8989020-93f2-4cfb-9b25-156369492a39',
@@ -66,7 +66,7 @@ describe('TaskController', () => {
           id: '172d7d82-af2c-4066-a07a-321f808955c0',
           title: 'Candidate 1',
           description: 'Lorem',
-          status: 'To Do',
+          status: 'TO_DO',
           created_at: new Date('2024-01-17T17:33:16.694Z'),
           created_by: {
             id: 'f8989020-93f2-4cfb-9b25-156369492a39',
@@ -238,7 +238,7 @@ describe('TaskController', () => {
             id: '172d7d82-af2c-4066-a07a-321f808955c0',
             title: 'Candidate 1',
             description: 'Lorem',
-            status: 'To Do',
+            status: 'TO_DO',
             created_at: new Date('2024-01-17T17:33:16.694Z'),
             created_by: {
               id: 'f8989020-93f2-4cfb-9b25-156369492a39',
