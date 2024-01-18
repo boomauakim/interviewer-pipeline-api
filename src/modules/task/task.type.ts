@@ -4,12 +4,6 @@ export enum TaskStatus {
   DONE = 'DONE',
 }
 
-export enum TaskStatusTitle {
-  TO_DO = 'To Do',
-  IN_PROGRESS = 'In Progress',
-  DONE = 'Done',
-}
-
 export type UserItem = {
   id: string;
   name: string;

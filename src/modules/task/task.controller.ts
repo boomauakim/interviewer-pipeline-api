@@ -23,12 +23,7 @@ import {
   UpdateTaskDto,
 } from './task.dto';
 import { TaskService } from './task.service';
-import {
-  ListAllTaskItem,
-  TaskItem,
-  TaskStatusTitle,
-  UserItem,
-} from './task.type';
+import { ListAllTaskItem, TaskItem, UserItem } from './task.type';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('tasks')
@@ -53,7 +48,7 @@ export class TaskController {
         id: task.id ?? '',
         title: task.title ?? '',
         description: task.description ?? '',
-        status: TaskStatusTitle[task.status] ?? '',
+        status: task.status ?? '',
         created_at: task.createdAt ?? new Date(),
         created_by: user,
       };
@@ -82,7 +77,7 @@ export class TaskController {
       id: result.id ?? '',
       title: result.title ?? '',
       description: result.description ?? '',
-      status: TaskStatusTitle[result.status] ?? '',
+      status: result.status ?? '',
       created_at: result.createdAt ?? new Date(),
       created_by: user,
     };
@@ -225,7 +220,7 @@ export class TaskController {
         id: changelog.id ?? '',
         title: changelog.title ?? '',
         description: changelog.description ?? '',
-        status: TaskStatusTitle[changelog.status] ?? '',
+        status: changelog.status ?? '',
         created_at: changelog.createdAt ?? new Date(),
         created_by: user,
       };
