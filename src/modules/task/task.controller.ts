@@ -25,11 +25,13 @@ import {
 import { TaskService } from './task.service';
 import { ListAllTaskItem, TaskItem, UserItem } from './task.type';
 import { AuthGuard } from '../auth/auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('tasks')
 export class TaskController {
   constructor(private taskService: TaskService) {}
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
@@ -60,6 +62,7 @@ export class TaskController {
     };
   }
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.OK)
   @Get('/:id')
@@ -85,6 +88,7 @@ export class TaskController {
     return { task: task };
   }
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard)
@@ -95,6 +99,7 @@ export class TaskController {
     await this.taskService.createTask(userId, createTaskDto);
   }
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(AuthGuard)
@@ -109,6 +114,7 @@ export class TaskController {
     await this.taskService.updateTask(userId, taskId, updateTaskDto);
   }
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(AuthGuard)
@@ -117,6 +123,7 @@ export class TaskController {
     await this.taskService.deleteTask(taskId);
   }
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
@@ -148,6 +155,7 @@ export class TaskController {
     return { comments: comments, total: count };
   }
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(AuthGuard)
@@ -162,6 +170,7 @@ export class TaskController {
     await this.taskService.createComment(userId, taskId, createCommentDto);
   }
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(AuthGuard)
@@ -182,6 +191,7 @@ export class TaskController {
     );
   }
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(AuthGuard)
@@ -196,6 +206,7 @@ export class TaskController {
     await this.taskService.deleteComment(userId, taskId, commentId);
   }
 
+  @ApiBearerAuth('Bearer Token')
   @Version('1')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
