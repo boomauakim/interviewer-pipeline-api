@@ -23,4 +23,4 @@ COPY --chown=node:node --from=build /usr/src/app/node_modules/.prisma/client  ./
 
 ENV NODE_ENV production
 EXPOSE 3000
-CMD [  "npm", "run", "start:migrate:prod" ]
+CMD [  "npm", "run", "start:prod" ]
