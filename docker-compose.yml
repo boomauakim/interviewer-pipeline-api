@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:UsbQKeKdT6rPN328@db:5432/interviewer-pipeline?schema=public
+      JWT_SECRET: AYs5PUAwHFNqqWS4Tu5unqdzjUFVG58GNHR5P2dA5rtc9x8r5B
+      REDIS_URL: redis://redis:6379
+  db:
+    container_name: db
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=UsbQKeKdT6rPN328
+      - POSTGRES_DB=interviewer-pipeline
+    healthcheck:
+      test: pg_isready -U postgres
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: 'exit 0'
