@@ -35,7 +35,7 @@ describe('AuthService', () => {
         updatedAt: new Date('2024-01-18T00:00:00.000Z'),
       };
       jest
-        .spyOn(userService, 'findOne')
+        .spyOn(userService, 'findCredential')
         .mockImplementation(async () => response);
       jest.spyOn(jwtService, 'signAsync').mockImplementation(async () => '');
 
@@ -45,7 +45,9 @@ describe('AuthService', () => {
     });
 
     it('should throw an UnauthorizedException', async () => {
-      jest.spyOn(userService, 'findOne').mockImplementation(async () => null);
+      jest
+        .spyOn(userService, 'findCredential')
+        .mockImplementation(async () => null);
 
       try {
         await service.signIn('tony@avenger.team', 'xacTUDleveNO');
@@ -55,7 +57,9 @@ describe('AuthService', () => {
     });
 
     it('should throw an UnauthorizedException', async () => {
-      jest.spyOn(userService, 'findOne').mockImplementation(async () => null);
+      jest
+        .spyOn(userService, 'findCredential')
+        .mockImplementation(async () => null);
       jest.spyOn(jwtService, 'signAsync').mockImplementation(async () => '');
 
       try {
