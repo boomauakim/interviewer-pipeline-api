@@ -7,7 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async findOne(email: string, password: string) {
+  async findCredential(email: string, password: string) {
     const user = await this.prisma.user.findUnique({
       where: { email: email },
     });
@@ -21,6 +21,12 @@ export class UserService {
     }
 
     return null;
+  }
+
+  async findOne(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+    });
   }
 
   async create(user: CreateUser) {

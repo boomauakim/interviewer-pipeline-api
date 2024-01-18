@@ -12,7 +12,7 @@ export class AuthService {
 
   async signIn(email: string, password: string) {
     try {
-      const user = await this.userService.findOne(email, password);
+      const user = await this.userService.findCredential(email, password);
 
       if (!user) {
         throw new UnauthorizedException();
