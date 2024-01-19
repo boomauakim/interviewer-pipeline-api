@@ -81,6 +81,7 @@ export class TaskController {
       title: result.title ?? '',
       description: result.description ?? '',
       status: result.status ?? '',
+      is_archived: result.isArchived ?? false,
       created_at: result.createdAt ?? new Date(),
       created_by: user,
     };
