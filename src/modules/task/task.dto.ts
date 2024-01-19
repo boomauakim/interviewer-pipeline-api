@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsBoolean,
   IsOptional,
+  IsBooleanString,
 } from 'class-validator';
 import { TaskStatus } from './task.type';
 
@@ -15,6 +16,10 @@ export class ListAllTaskFilterDto {
   @IsOptional()
   @IsString()
   limit: string;
+
+  @IsOptional()
+  @IsBooleanString()
+  is_archived: string;
 }
 
 export class CreateTaskDto {
