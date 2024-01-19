@@ -24,10 +24,12 @@ export class TaskService {
 
     const skip = (page - 1) * limit;
 
+    const isArchived = query?.is_archived == 'true' ?? false;
+
     return this.prisma.$transaction([
       this.prisma.task.findMany({
         where: {
-          isArchived: false,
+          isArchived: isArchived,
         },
         orderBy: {
           createdAt: 'asc',
@@ -40,7 +42,7 @@ export class TaskService {
       }),
       this.prisma.task.count({
         where: {
-          isArchived: false,
+          isArchived: isArchived,
         },
       }),
     ]);

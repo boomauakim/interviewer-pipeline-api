@@ -24,6 +24,7 @@ export type TaskItem = {
   title: string;
   description: string;
   status: string;
+  is_archived: boolean;
   created_at: Date;
   created_by: UserItem;
 };
